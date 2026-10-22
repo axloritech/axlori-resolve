@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Demo photo placeholder: projector">
+  <rect width="800" height="600" fill="#F1F5F9"/>
+  <rect x="1" y="1" width="798" height="598" fill="none" stroke="#CBD5E1" stroke-width="2"/>
+  <g fill="none" stroke="#94A3B8" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="250" y="220" width="300" height="130" rx="16"/>
+    <circle cx="340" cy="285" r="34"/>
+    <circle cx="340" cy="285" r="14"/>
+    <path d="M455 255h60M455 285h60M455 315h40"/>
+    <path d="M270 350l-12 40M530 350l12 40"/>
+  </g>
+  <text x="400" y="465" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="28" fill="#64748B">Demo photo placeholder</text>
+  <text x="400" y="505" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="20" fill="#94A3B8">Not a real incident photograph</text>
+</svg>

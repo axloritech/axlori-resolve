@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Demo photo placeholder: water leak">
+  <rect width="800" height="600" fill="#F1F5F9"/>
+  <rect x="1" y="1" width="798" height="598" fill="none" stroke="#CBD5E1" stroke-width="2"/>
+  <g fill="none" stroke="#94A3B8" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M400 190c40 55 70 90 70 130a70 70 0 1 1-140 0c0-40 30-75 70-130z"/>
+    <path d="M370 330a34 34 0 0 0 30 24"/>
+  </g>
+  <text x="400" y="465" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="28" fill="#64748B">Demo photo placeholder</text>
+  <text x="400" y="505" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="20" fill="#94A3B8">Not a real incident photograph</text>
+</svg>
