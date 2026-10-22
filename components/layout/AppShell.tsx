@@ -3,22 +3,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { X } from "lucide-react";
+import { Info, X } from "lucide-react";
 
 import SidebarContent from "@/components/layout/SidebarContent";
 import Topbar from "@/components/layout/Topbar";
+import { DEMO_AUTH, type AuthContextInfo } from "@/components/layout/auth-context";
 import Toaster from "@/components/ui/Toaster";
 import { useAppStore } from "@/lib/store";
 import { cx } from "@/lib/utils";
 
 /**
  * Application shell: persistent desktop sidebar, accessible mobile drawer,
- * top navigation bar, content column and toast host.
+ * top navigation bar, content column and toast host. `auth` comes resolved
+ * from the server layout in app/(app)/layout.tsx.
  */
-export default function AppShell({ children }: { children: ReactNode }) {
+export default function AppShell({ children, auth = DEMO_AUTH }: { children: ReactNode; auth?: AuthContextInfo }) {
   const pathname = usePathname();
   const { settings } = useAppStore();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   // Close the drawer whenever the route changes.
   useEffect(() => {
@@ -46,6 +49,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
     };
   }, [mobileOpen]);
 
+  const showBanner = !bannerDismissed && !auth.live && (auth.configured ? auth.demoBanner : true);
+  const bannerText = auth.configured
+    ? "You are browsing the demo. Content is fictional and demo access grants no real privileges. Sign in to use a real account."
+    : "Demo build: authentication is not configured yet, so everything here is fictional and stored only in your browser.";
+
   return (
     <div className={cx(settings.compactTables && "density-compact")}>
       <a
@@ -57,7 +65,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[250px] lg:block">
-        <SidebarContent />
+        <SidebarContent auth={auth} />
       </aside>
 
       {/* Mobile drawer */}
@@ -83,13 +91,34 @@ export default function AppShell({ children }: { children: ReactNode }) {
             >
               <X aria-hidden className="h-5 w-5" />
             </button>
-            <SidebarContent onNavigate={() => setMobileOpen(false)} />
+            <SidebarContent auth={auth} onNavigate={() => setMobileOpen(false)} />
           </div>
         </div>
       ) : null}
 
       <div className="flex min-h-screen flex-col lg:pl-[250px]">
-        <Topbar onOpenNav={() => setMobileOpen(true)} />
+        <Topbar auth={auth} onOpenNav={() => setMobileOpen(true)} />
+        {showBanner ? (
+          <div role="status" className="border-b border-primary-border bg-primary-subtle">
+            <div className="mx-auto flex w-full max-w-shell items-start gap-2.5 px-4 py-2.5 sm:px-6 lg:px-8">
+              <Info aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <p className="flex-1 text-xs leading-5 text-navy-800">{bannerText}</p>
+              {!auth.live && auth.configured ? (
+                <Link href="/demo/exit" className="shrink-0 text-xs font-medium text-primary underline-offset-2 hover:underline">
+                  Leave demo
+                </Link>
+              ) : null}
+              <button
+                type="button"
+                aria-label="Dismiss banner"
+                onClick={() => setBannerDismissed(true)}
+                className="rounded p-0.5 text-navy-800 transition-colors hover:bg-white/60"
+              >
+                <X aria-hidden className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        ) : null}
         <main id="main-content" className="flex-1">
           <div className="mx-auto w-full max-w-shell px-4 py-6 sm:px-6 lg:px-8">{children}</div>
         </main>

@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserRound } from "lucide-react";
+import { LogOut, UserRound } from "lucide-react";
 
 import Logo from "@/components/layout/Logo";
 import { itemsForRole } from "@/components/layout/nav-config";
 import RoleSwitcher from "@/components/layout/RoleSwitcher";
+import { DEMO_AUTH, type AuthContextInfo } from "@/components/layout/auth-context";
 import { ROLE_LABEL } from "@/lib/constants";
 import { WORKSPACE_NAME } from "@/lib/site";
 import { useAppStore } from "@/lib/store";
@@ -14,12 +15,25 @@ import { cx, initialsOf } from "@/lib/utils";
 
 /**
  * Shared sidebar content used by the persistent desktop sidebar and the
- * mobile drawer.
+ * mobile drawer. In live (authenticated) mode the demo role switcher is
+ * removed entirely: roles come from the server-verified profile, and a
+ * client-side widget could never grant privileges.
  */
-export default function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+export default function SidebarContent({
+  onNavigate,
+  auth = DEMO_AUTH,
+}: {
+  onNavigate?: () => void;
+  auth?: AuthContextInfo;
+}) {
   const pathname = usePathname();
-  const { role, currentUser, visibleReports } = useAppStore();
-  const items = itemsForRole(role);
+  const { role: demoRole, currentUser, visibleReports } = useAppStore();
+
+  const navRole = auth.live ? (auth.role ?? "student") : demoRole;
+  const items = itemsForRole(navRole);
+  const displayName = auth.live ? (auth.name ?? "User") : currentUser.name;
+  const displayRole = auth.live ? (auth.role ?? "student") : currentUser.role;
+
   const openCount = visibleReports.filter(
     (r) => r.status === "submitted" || r.status === "under_review" || r.status === "in_progress"
   ).length;
@@ -64,15 +78,27 @@ export default function SidebarContent({ onNavigate }: { onNavigate?: () => void
       </nav>
 
       <div className="space-y-3 px-3 pb-5">
-        <RoleSwitcher />
+        {auth.live ? (
+          <div className="rounded-lg border border-green-500/30 bg-green-900/20 p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-green-300">Signed in</p>
+            <p className="mt-1 text-[11px] leading-4 text-green-200/80">
+              Real account session. Role comes from the server.
+            </p>
+          </div>
+        ) : (
+          <RoleSwitcher />
+        )}
         <div className="rounded-lg border border-white/10 p-3">
           <div className="flex items-center gap-3">
             <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">
-              {initialsOf(currentUser.name)}
+              {initialsOf(displayName)}
             </span>
             <div className="min-w-0 leading-tight">
-              <p className="truncate text-sm font-medium text-white">{currentUser.name}</p>
-              <p className="truncate text-xs text-slate-400">{ROLE_LABEL[currentUser.role]}</p>
+              <p className="truncate text-sm font-medium text-white">{displayName}</p>
+              <p className="truncate text-xs text-slate-400">
+                {ROLE_LABEL[displayRole]}
+                {auth.live ? "" : " (demo)"}
+              </p>
             </div>
             <Link
               href="/settings"
@@ -82,6 +108,18 @@ export default function SidebarContent({ onNavigate }: { onNavigate?: () => void
             >
               <UserRound aria-hidden className="h-4 w-4" />
             </Link>
+            {auth.live ? (
+              <form method="post" action="/auth/signout" className="contents">
+                <button
+                  type="submit"
+                  aria-label="Sign out"
+                  title="Sign out"
+                  className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <LogOut aria-hidden className="h-4 w-4" />
+                </button>
+              </form>
+            ) : null}
           </div>
         </div>
         <div className="px-1">

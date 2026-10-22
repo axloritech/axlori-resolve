@@ -6,6 +6,7 @@ import { Bell, Check, Menu, Search, UserRound, X } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { titleForPath } from "@/components/layout/nav-config";
+import { DEMO_AUTH, type AuthContextInfo } from "@/components/layout/auth-context";
 import { ROLE_LABEL } from "@/lib/constants";
 import { useAppStore } from "@/lib/store";
 import { cx, formatRelative, initialsOf } from "@/lib/utils";
@@ -30,7 +31,7 @@ function usePopover(onClose: () => void) {
   return ref;
 }
 
-export default function Topbar({ onOpenNav }: { onOpenNav: () => void }) {
+export default function Topbar({ onOpenNav, auth = DEMO_AUTH }: { onOpenNav: () => void; auth?: AuthContextInfo }) {
   const pathname = usePathname();
   const router = useRouter();
   const {
@@ -40,6 +41,10 @@ export default function Topbar({ onOpenNav }: { onOpenNav: () => void }) {
     markAllNotificationsRead,
     markNotificationRead,
   } = useAppStore();
+
+  const displayName = auth.live ? (auth.name ?? "User") : currentUser.name;
+  const displayRole = auth.live ? (auth.role ?? "student") : currentUser.role;
+  const displayEmail = auth.live ? (auth.email ?? "") : currentUser.email;
 
   const { crumb, title } = titleForPath(pathname);
 
@@ -192,21 +197,25 @@ export default function Topbar({ onOpenNav }: { onOpenNav: () => void }) {
             className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-page"
           >
             <span aria-hidden className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white">
-              {initialsOf(currentUser.name)}
+              {initialsOf(displayName)}
             </span>
             <span className="hidden text-left leading-tight sm:block">
-              <span className="block max-w-[140px] truncate text-sm font-medium text-ink">{currentUser.name}</span>
-              <span className="block text-xs text-muted">{ROLE_LABEL[currentUser.role]}</span>
+              <span className="block max-w-[140px] truncate text-sm font-medium text-ink">{displayName}</span>
+              <span className="block text-xs text-muted">
+                {ROLE_LABEL[displayRole]}
+                {auth.live ? "" : " (demo)"}
+              </span>
             </span>
           </button>
 
           {userOpen ? (
             <div className="animate-fade-in absolute right-0 mt-2 w-64 rounded-xl border border-line bg-card shadow-pop">
               <div className="border-b border-line px-4 py-3">
-                <p className="truncate text-sm font-semibold text-ink">{currentUser.name}</p>
-                <p className="truncate text-xs text-muted">{currentUser.email}</p>
+                <p className="truncate text-sm font-semibold text-ink">{displayName}</p>
+                <p className="truncate text-xs text-muted">{displayEmail}</p>
                 <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-page px-2 py-0.5 text-xs text-muted">
-                  <UserRound aria-hidden className="h-3 w-3" /> {ROLE_LABEL[currentUser.role]} (demo)
+                  <UserRound aria-hidden className="h-3 w-3" /> {ROLE_LABEL[displayRole]}
+                  {auth.live ? "" : " (demo)"}
                 </p>
               </div>
               <div className="py-1">
@@ -224,9 +233,21 @@ export default function Topbar({ onOpenNav }: { onOpenNav: () => void }) {
                 >
                   Report an issue
                 </Link>
+                {auth.live ? (
+                  <form method="post" action="/auth/signout">
+                    <button
+                      type="submit"
+                      className="block w-full px-4 py-2 text-left text-sm text-danger transition-colors hover:bg-page"
+                    >
+                      Sign out
+                    </button>
+                  </form>
+                ) : null}
               </div>
               <p className="border-t border-line px-4 py-2 text-[11px] leading-4 text-muted">
-                Demo profile menu. No account or session exists in this phase.
+                {auth.live
+                  ? "Signed in with a real account session."
+                  : "Demo profile menu. No account or session exists in this phase."}
               </p>
             </div>
           ) : null}

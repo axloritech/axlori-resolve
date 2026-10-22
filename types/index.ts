@@ -10,6 +10,19 @@
 
 export type Role = "student" | "staff" | "admin";
 
+/**
+ * Application profile row (public.profiles), linked 1:1 to auth.users.
+ * role starts as "student" on signup; staff/admin are granted only through a
+ * trusted administrative process, never by the client.
+ */
+export interface Profile {
+  id: string;
+  full_name: string;
+  email: string;
+  role: Role;
+  created_at: string;
+}
+
 export type ReportStatus =
   | "submitted"
   | "under_review"
